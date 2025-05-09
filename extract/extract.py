@@ -13,8 +13,8 @@ def extract_it(zip_path):
     output = os.path.join(os.getcwd(),'file')
     os.makedirs(output,exist_ok=True)
 
-    innetwork_path =os.path.json(output,'in_network.json')
-    provider_path = os.path.json(output,'provider.json')
+    innetwork_path =os.path.join(output,'in_network.json')
+    provider_path = os.path.join(output,'provider.json')
 
     with open(provider_path, 'w') as prov_file, \
         open(innetwork_path, 'w') as in_file, \
