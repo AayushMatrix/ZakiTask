@@ -52,8 +52,8 @@ def trasform_loc(provider_path,innetwork_path):
     rate1_path = "file/rate_data.parquet"
     provider1_path = "file/provider_data.parquet"
 
-    rate1.write.parquet(rate1_path)
-    provider1_path.write.parquet(provider1_path)
+    rate1.write.parquet(rate1_path,"overwrite")
+    change2_df.write.parquet(provider1_path,"overwrite")
 
     return(rate1_path,provider1_path)
 
