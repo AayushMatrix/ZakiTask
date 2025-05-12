@@ -5,12 +5,12 @@ from pyspark.sql.types import ArrayType,IntegerType,ShortType
 def trasform_loc(provider_path,innetwork_path):
     spark=SparkSession.builder.appName('provider').getOrCreate()
 
-    df = spark.read.json(innetwork_path)
-    df1 = spark.read.json(provider_path)
+    df1 = spark.read.json(innetwork_path)
+    df = spark.read.json(provider_path)
 
 
 
-    exploded_rates_df = df.withColumn("negotiated_rate", explode("negotiated_rates"))
+    exploded_rates_df = df1.withColumn("negotiated_rate", explode("negotiated_rates"))
     rate_df = exploded_rates_df.withColumn("provider_group_id", explode("negotiated_rate.provider_references")) \
                             .withColumn("negotiated_price", explode("negotiated_rate.negotiated_prices")) \
                             .select(
@@ -30,7 +30,7 @@ def trasform_loc(provider_path,innetwork_path):
     rate1 = rate.withColumn("provider_group_id", col("provider_group_id").cast(ShortType()))
 
 
-    provider_df = df1.withColumn("row", explode("provider_groups"))
+    provider_df = df.withColumn("row", explode("provider_groups"))
     npi_df = provider_df.withColumn("row1",explode("row.npi"))
     provider_flat = npi_df.select(
         col("provider_group_id"),

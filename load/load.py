@@ -9,7 +9,7 @@ def load(rate1_path,provider1_path):
     df1=spark.read.parquet(provider1_path)
 
     conn = psycopg2.connect(
-        dbname="my_pgdb",
+        dbname="postgres",
         user="postgres",
         password="admin",
         host="localhost",
