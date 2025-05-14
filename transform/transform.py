@@ -1,10 +1,12 @@
 from pyspark.sql import SparkSession
 from pyspark.sql.functions import explode, col,array,regexp_replace,when
 from pyspark.sql.types import ArrayType,IntegerType,ShortType
+import yaml 
 
-def trasform_loc(provider_path,innetwork_path):
-    spark=SparkSession.builder.appName('provider').getOrCreate()
 
+def trasform_loc(provider_path,innetwork_path,etl):
+
+    spark=etl.spark
     df1 = spark.read.json(innetwork_path)
     df = spark.read.json(provider_path)
 

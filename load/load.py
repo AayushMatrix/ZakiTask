@@ -2,21 +2,27 @@ from pyspark.sql import SparkSession
 import psycopg2
 
     
-def load(rate1_path,provider1_path):
-    spark=SparkSession.builder.appName('provider').getOrCreate()
+def load(rate1_path,provider1_path,etl):
+    spark=etl.spark
+
+    pg_host = etl.pg_host
+    pg_port = etl.pg_port
+    pg_database = etl.pg_database
+    pg_user = etl.pg_user
+    pg_password = etl.pg_password
 
     df = spark.read.parquet(rate1_path)
     df1=spark.read.parquet(provider1_path)
 
     conn = psycopg2.connect(
-        dbname="postgres",
-        user="postgres",
-        password="admin",
-        host="localhost",
-        port=5432
+        dbname=pg_database,
+        user=pg_user,
+        password=pg_password,
+        host=pg_host,
+        port=pg_port
     )
 
-    jdbc_url = "jdbc:postgresql://localhost:5432/postgres"
+    jdbc_url = f"jdbc:postgresql://{pg_host}:{pg_port}/{pg_database}"
     connection_properties = {
         "user": "postgres",
         "password": "admin",
@@ -36,7 +42,7 @@ def load(rate1_path,provider1_path):
     """
     cur.execute(create_table_query)
     conn.commit()
-    df.write.jdbc(url=jdbc_url,table="provider_data1",mode="append", properties=connection_properties)
+    df1.write.jdbc(url=jdbc_url,table="provider_data1",mode="append", properties=connection_properties)
 
 
 
@@ -56,7 +62,7 @@ def load(rate1_path,provider1_path):
     """
     cur.execute(create_table_query)
     conn.commit()
-    df1.write.jdbc(url=jdbc_url,table="innetwork_data1",mode="append", properties=connection_properties)
+    df.write.jdbc(url=jdbc_url,table="innetwork_data1",mode="append", properties=connection_properties)
 
     cur.close()
     conn.close()
