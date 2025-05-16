@@ -34,10 +34,21 @@ def load(rate1_path,provider1_path,etl):
     create_table_query = """
     DROP TABLE IF EXISTS provider_data1;
     CREATE TABLE IF NOT EXISTS provider_data1 (
-        provider_group_id INT,
+        provider_group_id BIGINT,
         npi BIGINT,
         tin_type SMALLINT,
-        tin TEXT
+        tin VARCHAR,
+        prv_city VARCHAR,
+        prv_phone VARCHAR,
+        prv_state VARCHAR,
+        prv_street_1 VARCHAR,
+        prv_type_code INTEGER,
+        prv_zip VARCHAR,
+        full_name VARCHAR,
+        latitude DOUBLE PRECISION,
+        longitude DOUBLE PRECISION,
+        taxonomy TEXT[],
+        prv_specialty TEXT[]
     );
     """
     cur.execute(create_table_query)
@@ -63,6 +74,7 @@ def load(rate1_path,provider1_path,etl):
     cur.execute(create_table_query)
     conn.commit()
     df.write.jdbc(url=jdbc_url,table="innetwork_data1",mode="append", properties=connection_properties)
+    
 
     cur.close()
     conn.close()

@@ -30,12 +30,12 @@ class ETL:
             self.spark = SparkSession.builder.appName("ETL Pipeline").config("spark.driver.memory", self.spark_driver_memory).getOrCreate()
 
 
-    def execute(self,zip_path):
+    def execute(self,zip_path,provider):
         self.logger.info("Extract")
         provider_path,inetwork_path = extract.extract_it(zip_path)
 
         self.logger.info("Scrub")
-        rate1_path,provider1_path = transform.trasform_loc(provider_path,inetwork_path,self)
+        rate1_path,provider1_path = transform.trasform_loc(provider_path,inetwork_path,self,provider)
 
         self.logger.info("Load")
         load.load(rate1_path,provider1_path,self)

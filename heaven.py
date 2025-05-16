@@ -1,13 +1,15 @@
-
 import requests
 import logging
+import argparse
 
 logger = logging.getLogger("ETL")
+logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
 
-class Parent:
+class Planet:
     def __init__(self, name, distance):
         self.name = name
-        self.distance = distance
+        self.distance = distance  
+    
     def __repr__(self):
         return f"{self.name}: {self.distance} million km"
 
@@ -15,36 +17,64 @@ def get_planetary_data():
     url = "https://api.le-systeme-solaire.net/rest/bodies/"
     response = requests.get(url)
     data = response.json()
-    
     planets = []
-    for body in data["bodies"]:
+    
+    for body in data.get("bodies", []):  # Added default empty list
         if body.get("isPlanet"):
-            distance = body.get("semimajorAxis") / 1000000
-            planets.append(Parent(
-                name=body["englishName"],
+            distance = body.get("semimajorAxis", 0) / 1000000
+            planets.append(Planet(
+                name=body.get("englishName", "Unknown"),
                 distance=distance
             ))
     return planets
 
-def sort_ascending(planets):
+def insertion_sort(planets, ascending=True):
     for i in range(1, len(planets)):
         current = planets[i]
         j = i - 1
-        while j >= 0 and current.distance < planets[j].distance:
-            planets[j + 1] = planets[j]
-            j -= 1
+        if ascending:
+            while j >= 0 and current.distance < planets[j].distance:
+                planets[j + 1] = planets[j]
+                j -= 1
+        else:
+            while j >= 0 and current.distance > planets[j].distance:
+                planets[j + 1] = planets[j]
+                j -= 1
         planets[j + 1] = current
     return planets
 
-def show_ascending():
+def bubble_sort(planets, ascending=True):
+    n = len(planets)
+    for i in range(n):
+        for j in range(0, n-i-1):
+            if ascending:
+                if planets[j].distance > planets[j+1].distance:
+                    planets[j], planets[j+1] = planets[j+1], planets[j]
+            else:
+                if planets[j].distance < planets[j+1].distance:
+                    planets[j], planets[j+1] = planets[j+1], planets[j]
+    return planets
+
+def main():
+    parser = argparse.ArgumentParser(description="Display solar system planets sorted by distance from Sun")
+    parser.add_argument("--sort", required=True,help="apiA for Ascending, apiD for Descending")
+    parser.add_argument("--algorithm", choices=['insertion', 'bubble'], default='insertion',help="Sorting algorithm: insertion or bubble")
+    args = parser.parse_args()
+
+    sort_arg = args.sort.lower()
+    if sort_arg.endswith('a'):
+        ascending = True
+    elif sort_arg.endswith('d'):
+        ascending = False
     planets = get_planetary_data()
-    asc_planets = sort_ascending(planets)
-    for planet in asc_planets:
+
+    if args.algorithm == 'bubble':
+        sorted_planets = bubble_sort(planets, ascending)
+    else:
+        sorted_planets = insertion_sort(planets, ascending)
+
+    for planet in sorted_planets:
         logger.info(planet)
 
-def show_descending():
-    planets = get_planetary_data()
-    desc_planets = sort_ascending(planets)[::-1]  
-    for planet in desc_planets:
-        logger.info(planet)
-
+if __name__ == "__main__":
+    main()
