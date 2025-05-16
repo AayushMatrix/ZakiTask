@@ -34,17 +34,17 @@ def load(rate1_path,provider1_path,etl):
     create_table_query = """
     DROP TABLE IF EXISTS provider_data1;
     CREATE TABLE IF NOT EXISTS provider_data1 (
-        provider_group_id BIGINT,
+        provider_group_id INT,
         npi BIGINT,
         tin_type SMALLINT,
-        tin VARCHAR,
-        prv_city VARCHAR,
-        prv_phone VARCHAR,
-        prv_state VARCHAR,
-        prv_street_1 VARCHAR,
-        prv_type_code INTEGER,
-        prv_zip VARCHAR,
-        full_name VARCHAR,
+        tin VARCHAR(15),
+        prv_city VARCHAR(255),
+        prv_phone VARCHAR(15),
+        prv_state CHAR(2),
+        prv_street_1 VARCHAR(255),
+        prv_type_code SMALLINT,
+        prv_zip VARCHAR(10),
+        full_name VARCHAR(255),
         latitude DOUBLE PRECISION,
         longitude DOUBLE PRECISION,
         taxonomy TEXT[],
@@ -60,14 +60,14 @@ def load(rate1_path,provider1_path,etl):
     create_table_query = """
     DROP TABLE IF EXISTS innetwork_data1;
     CREATE TABLE IF NOT EXISTS innetwork_data1 (
-        billing_code TEXT,
-        billing_code_type TEXT,
-        negotiation_arrangement TEXT,
+        billing_code VARCHAR(10),
+        billing_code_type VARCHAR(10),
+        negotiation_arrangement VARCHAR(5),
         provider_group_id INT,
-        billing_class TEXT,
+        billing_class VARCHAR(15),
         billing_code_modifier TEXT[],
         negotiated_rate DOUBLE PRECISION,
-        negotiated_type TEXT,
+        negotiated_type VARCHAR(12),
         service_code INTEGER[]
     );
     """
