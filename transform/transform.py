@@ -52,8 +52,8 @@ def trasform_loc(provider_path,innetwork_path,etl,provider):
     df2 = spark.read.json("/home/aayush-gyawali/Downloads/provider_detail.json")
 
     column_drop = df2.drop('prv_fax','provider_name_prefix_text','prv_type_desc')
-    cast_int = column_drop.withColumn('prv_type_code',col('prv_type_code').cast(IntegerType()))
-    mapped = cast_int.withColumn('prv_type_code',when(col('prv_type_code')=="P",1).when(col('prv_type_code')=="F",2))
+    mapped1= column_drop.withColumn('prv_type_code',when(col('prv_type_code')=="P",1).when(col('prv_type_code')=="F",2))
+    mapped = mapped1.withColumn('prv_type_code',col('prv_type_code').cast(IntegerType()))
     merge = mapped.withColumn("full_name",concat(col('provider_first_name'),lit(" "),col('provider_last_name'),lit(" "),col('provider_middle_name')))
     merge = merge.select(
     "*",  
