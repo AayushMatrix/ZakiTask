@@ -19,7 +19,7 @@ def get_planetary_data():
     data = response.json()
     planets = []
     
-    for body in data.get("bodies", []):  # Added default empty list
+    for body in data.get("bodies"): 
         if body.get("isPlanet"):
             distance = body.get("semimajorAxis", 0) / 1000000
             planets.append(Planet(
