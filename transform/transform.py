@@ -1,5 +1,5 @@
 from pyspark.sql import SparkSession
-from pyspark.sql.functions import explode, col,array,regexp_replace,when,concat,lit
+from pyspark.sql.functions import explode, col,array,regexp_replace,when,concat,lit,concat_ws
 from pyspark.sql.types import ArrayType,IntegerType,ShortType
 import yaml 
 
@@ -40,7 +40,6 @@ def trasform_loc(provider_path,innetwork_path,etl,provider):
         col("row.tin.type").alias("tin_type"),
         col("row.tin.value").alias("tin")
     )
-
     hypenrm_df=provider_flat.withColumn("tin",regexp_replace(col("tin"),"-",''))
     change_df = hypenrm_df.withColumn('tin_type',when((col('tin_type')== 'ein'), 1).when((col('tin_type')== 'npi'), 2))
     change_df.show()
@@ -54,44 +53,16 @@ def trasform_loc(provider_path,innetwork_path,etl,provider):
     column_drop = df2.drop('prv_fax','provider_name_prefix_text','prv_type_desc')
     mapped1= column_drop.withColumn('prv_type_code',when(col('prv_type_code')=="P",1).when(col('prv_type_code')=="F",2))
     mapped = mapped1.withColumn('prv_type_code',col('prv_type_code').cast(IntegerType()))
-    merge = mapped.withColumn("full_name",concat(col('provider_first_name'),lit(" "),col('provider_last_name'),lit(" "),col('provider_middle_name')))
-    merge = merge.select(
-    "*",  
-    col("loc.lat").alias("latitude"),
-    col("loc.lon").alias("longitude")
-                      )
-    merge=merge.drop('loc')
+    merge = mapped.withColumn("full_name", concat_ws(" ","provider_first_name", "provider_middle_name","provider_last_name")).drop("provider_first_name","provider_last_name","provider_middle_name")
+    
+    merge = merge.select("*",col("loc.lat").alias("latitude"),col("loc.lon").alias("longitude")).drop('loc')
 
-    merge = merge.withColumn("taxonomy",array(col("prv_taxonomy_1_code"),col("prv_taxonomy_2_code"),col("prv_taxonomy_3_code")))
-    merge=merge.drop("prv_taxonomy_1_code","prv_taxonomy_2_code","prv_taxonomy_3_code")
- 
-    merge1 = merge.withColumn("prv_specialty",array(col("prv_specialty_1_desc"),col("prv_specialty_2_desc"),col("prv_specialty_2_desc")))
-    merge2=merge1.drop("prv_specialty_1_desc","prv_specialty_2_desc","prv_specialty_3_desc")
+    merge = merge.withColumn("taxonomy",array(col("prv_taxonomy_1_code"),col("prv_taxonomy_2_code"),col("prv_taxonomy_3_code"))).drop("prv_taxonomy_1_code","prv_taxonomy_2_code","prv_taxonomy_3_code")
 
-    merge3=merge2.drop("provider_first_name","provider_last_name","provider_middle_name")
+    merge1 = merge.withColumn("prv_specialty",array(col("prv_specialty_1_desc"),col("prv_specialty_2_desc"),col("prv_specialty_2_desc"))).drop("prv_specialty_1_desc","prv_specialty_2_desc","prv_specialty_3_desc")
+    df_joined = change2_df.join(merge1, on="npi", how="inner")
 
-    df_joined = change2_df.alias("a").join(
-    merge3.alias("b"),
-    how="inner",
-    on=col("a.npi") == col("b.npi"))
-
-    df_result = df_joined.select(
-    col("provider_group_id"),
-    col("a.npi"),
-    col("tin_type"),
-    col("tin"),
-    col("prv_city"),
-    col("prv_phone"),
-    col("prv_state"),
-    col("prv_street_1"),
-    col("prv_type_code"),
-    col("prv_zip"),
-    col("full_name"),
-    col("latitude"),
-    col("longitude"),
-    col("taxonomy"),
-    col("prv_specialty")
-)
+    unjoined_df= change2_df.join(merge1,on="npi",how="left_anti")
 
     # rate1.write.parquet("rate")
     # change2_df.write.parquet("provider")
@@ -99,9 +70,12 @@ def trasform_loc(provider_path,innetwork_path,etl,provider):
     
     rate1_path = "file/rate_data.parquet"
     provider1_path = "file/provider_data.parquet"
+    unjoin_path= "file/unjoin_data.parquet"
 
     rate1.write.parquet(rate1_path,"overwrite")
-    df_result.write.parquet(provider1_path,"overwrite")
+    df_joined.write.parquet(provider1_path,"overwrite")
+    unjoined_df.write.parquet(unjoin_path,"overwrite")
+  
 
     return(rate1_path,provider1_path)
 
