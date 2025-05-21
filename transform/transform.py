@@ -1,5 +1,5 @@
 from pyspark.sql import SparkSession
-from pyspark.sql.functions import explode, col,array,regexp_replace,when,concat,lit,concat_ws
+from pyspark.sql.functions import explode, col,array,regexp_replace,when,concat,lit,concat_ws,array_except
 from pyspark.sql.types import ArrayType,IntegerType,ShortType
 import yaml 
 
@@ -64,6 +64,9 @@ def trasform_loc(provider_path,innetwork_path,etl,provider):
 
     unjoined_df= change2_df.join(merge1,on="npi",how="left_anti")
 
+    cleaned_df = df_joined.withColumn("taxonomy",array_except(col("taxonomy"),array(lit(None), lit("")))) \
+                 .withColumn("prv_specialty",array_except(col("taxonomy"),array(lit(None), lit(""))))
+
     # rate1.write.parquet("rate")
     # change2_df.write.parquet("provider")
     
@@ -73,7 +76,7 @@ def trasform_loc(provider_path,innetwork_path,etl,provider):
     unjoin_path= "file/unjoin_data.parquet"
 
     rate1.write.parquet(rate1_path,"overwrite")
-    df_joined.write.parquet(provider1_path,"overwrite")
+    cleaned_df.write.parquet(provider1_path,"overwrite")
     unjoined_df.write.parquet(unjoin_path,"overwrite")
   
 
