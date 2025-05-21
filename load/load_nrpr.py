@@ -2,7 +2,7 @@ from pyspark.sql import SparkSession
 import psycopg2
 
     
-def loadnrpr(rate1_path,provider1_path,etl):
+def load(rate1_path,provider1_path,etl):
     spark=etl.spark
 
     pg_host = etl.pg_host
