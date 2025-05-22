@@ -48,7 +48,6 @@ def trasform_loc(provider_path,innetwork_path,etl,provider):
  
     
     # new provider 
-    df2 = spark.read.json("/home/aayush-gyawali/Downloads/provider_detail.json")
 
     column_drop = df2.drop('prv_fax','provider_name_prefix_text','prv_type_desc')
     mapped1= column_drop.withColumn('prv_type_code',when(col('prv_type_code')=="P",1).when(col('prv_type_code')=="F",2))

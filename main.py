@@ -6,7 +6,6 @@ def main():
     # parser.add_argument("--zip_path",  help="Path to the ZIP file containing in_network and provider data")
     # parser.add_argument("--provider", help="Path to provider_detail.json")
     parser.add_argument("--prov", help="Path to provider_detail.json")
-
     parser.add_argument("--zip", help="Path to the ZIP file to process")
     args = parser.parse_args()
     # zip_path = sys.argv[1]
