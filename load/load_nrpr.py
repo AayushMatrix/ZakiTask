@@ -61,7 +61,8 @@ def load_nrpr(rate_path,provider_path,df2,etl):
         billing_code_modifier TEXT[],
         negotiated_rate DOUBLE PRECISION,
         negotiated_type VARCHAR(12),
-        service_code INTEGER[]
+        service_code INTEGER[],
+        taxonomy_list VARCHAR
     );
     """
     cur.execute(create_table_query)
