@@ -27,14 +27,14 @@ def load_nrpr(rate_path,provider_path,df2,etl):
     }
     cur = conn.cursor()
     create_table_query = """
-    DROP TABLE IF EXISTS providernrpr;
-    CREATE TABLE IF NOT EXISTS provider_data1 (
+    DROP TABLE IF EXISTS provider;
+    CREATE TABLE IF NOT EXISTS provider (
         provider_group_id INT,
         npi BIGINT,
         tin_type SMALLINT,
         tin VARCHAR(15),
         prv_city VARCHAR(255),
-        prv_phone VARCHAR(15),
+        prv_phone VARCHAR(255),
         prv_state CHAR(2),
         prv_street_1 VARCHAR(255),
         prv_type_code SMALLINT,
@@ -43,16 +43,16 @@ def load_nrpr(rate_path,provider_path,df2,etl):
         latitude DOUBLE PRECISION,
         longitude DOUBLE PRECISION,
         taxonomy TEXT[],
-        prv_specialty TEXT[]
+        prv_specialty TEXT[],
+        geom GEOGRAPHY GENERATED ALWAYS AS (ST_SetSRID(ST_MakePoint(longitude, latitude), 4326)::geography)STORED
     );
     """
     cur.execute(create_table_query)
     conn.commit()
-    df1.write.jdbc(url=jdbc_url,table="providernrpr",mode="append", properties=connection_properties)
-    
+    df1.write.jdbc(url=jdbc_url,table="provider",mode="append", properties=connection_properties)
     create_table_query = """
-    DROP TABLE IF EXISTS ratenrpr;
-    CREATE TABLE IF NOT EXISTS innetwork_data1 (
+    DROP TABLE IF EXISTS rate;
+    CREATE TABLE IF NOT EXISTS rate (
         billing_code VARCHAR(10),
         billing_code_type VARCHAR(10),
         negotiation_arrangement VARCHAR(5),
@@ -62,12 +62,12 @@ def load_nrpr(rate_path,provider_path,df2,etl):
         negotiated_rate DOUBLE PRECISION,
         negotiated_type VARCHAR(12),
         service_code INTEGER[],
-        taxonomy_list VARCHAR
+        taxonomy_list TEXT[]
     );
     """
     cur.execute(create_table_query)
     conn.commit()
-    df.write.jdbc(url=jdbc_url,table="ratenrpr",mode="append", properties=connection_properties)
+    df.write.jdbc(url=jdbc_url,table="rate",mode="append", properties=connection_properties)
 
     cur.execute("CREATE SCHEMA IF NOT EXISTS taxonomy;")
     conn.commit()
@@ -77,13 +77,11 @@ def load_nrpr(rate_path,provider_path,df2,etl):
         billing_code VARCHAR(5),
         billing_code_type VARCHAR(10),
         billing_description TEXT,
-        taxonomy_list TEXT
-        
+        taxonomy_list TEXT[]
     );
     """
     cur.execute(create_table_query)
     conn.commit()
     df2.write.jdbc(url=jdbc_url,table="taxonomy.billing_taxonomy",mode="append", properties=connection_properties)
-
     cur.close()
     conn.close()
