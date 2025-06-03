@@ -30,9 +30,8 @@ def extract(zip):
         for file in os.listdir(zip):
             if file.endswith(".json.gz"):
                 with gzip.open(os.path.join(zip, file), 'rt') as inp:
-                    parser = ijson.items(inp, '')
-                    for record in parser:
-                        out.write(json.dumps(record,default=con_decimal) + '\n')
+                    for record in ijson.items(inp, ''):
+                        out.write(json.dumps(record, default=con_decimal) + '\n')
     return new_path
 
 
